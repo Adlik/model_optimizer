@@ -1,0 +1,42 @@
+main_file: "examples/classifier_imagenet/main.py"
+arch: "efficientnet_b0"
+model_source: TorchVision
+log_name: "multi_gpu"
+debug: false
+data: "/data/imagenet/imagenet-torch"
+lr: 0.016
+epochs: 360
+batch_size: 256
+workers: 8
+print_freq: 50
+evaluate: false
+pretrained: false
+seed: 0
+gpu_id: ANY
+multi_gpu {
+  world_size: 1
+  rank: 0
+  dist_url: "tcp://127.0.0.1:23457"
+  dist_backend: "nccl"
+  multiprocessing_distributed: true
+}
+
+warmup {
+  lr_warmup_epochs: 5
+  lr_warmup_decay: 0.01
+}
+
+lr_scheduler: StepLR
+step_lr {
+  step_size: 3
+  gamma: 0.963
+}
+
+optimizer: RMSprop
+rmsprop{
+  weight_decay: 1e-5
+  momentum: 0.9
+}
+
+label_smoothing: 0.1
+autoaugment: RA

@@ -1,0 +1,35 @@
+main_file: "examples/classifier_cifar10/main.py"
+arch: "resnet18"
+model_source: Local
+log_name: "multi_gpu_cifar10"
+debug: false
+data: "/data/cifar-10"
+lr: 0.2
+epochs: 120
+batch_size: 256
+workers: 64
+print_freq: 50
+evaluate: false
+pretrained: false
+seed: 0
+gpu_id: ANY
+multi_gpu {
+  world_size: 1
+  rank: 0
+  dist_url: "tcp://127.0.0.1:23457"
+  dist_backend: "nccl"
+  multiprocessing_distributed: true
+}
+
+warmup {
+  lr_warmup_epochs: 5
+  lr_warmup_decay: 0.01
+}
+
+lr_scheduler: CosineAnnealingLR
+
+optimizer: SGD
+sgd {
+  weight_decay: 5e-04
+  momentum: 0.9
+}

@@ -1,0 +1,50 @@
+main_file: "examples/classifier_imagenet/main_quantization.py"
+arch: "efficientnet_b0"
+model_source: TorchVision
+log_name: "quantization_ptq"
+debug: false
+data: "/data/imagenet/imagenet-torch"
+lr: 0.002
+epochs: 360
+batch_size: 32
+workers: 8
+print_freq: 50
+evaluate: false
+pretrained: true
+save_jit_trace: true
+seed: 0
+gpu_id: ANY
+warmup {
+  lr_warmup_epochs: 5
+  lr_warmup_decay: 0.01
+}
+
+lr_scheduler: CosineAnnealingLR
+
+optimizer: SGD
+sgd {
+  weight_decay: 1e-04
+  momentum: 0.9
+}
+
+quantization {
+  quantize: true
+  quantize_fx: true
+  post_training_quantize: true
+  backend: "fbgemm"
+  num_calibration_batches: 120
+  activation_quantization_observer {
+    quantization_method: "quantization_error"
+	per_channel: false
+	symmetric: false
+	reduce_range: true
+	dtype: "quint8"
+  }
+  weight_quantization_observer {
+    quantization_method: "minmax"
+	per_channel: true
+	symmetric: true
+	reduce_range: false
+	dtype: "qint8"
+  }
+}

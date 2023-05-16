@@ -1,0 +1,59 @@
+main_file: "examples/classifier_imagenet/main_quantization.py"
+arch: "resnet18"
+model_source: TorchVision
+log_name: "quantization_lsq_tensorrt"
+debug: false
+data: "/data/imagenet/imagenet-torch"
+lr: 0.0005
+epochs: 10
+batch_size: 128
+workers: 8
+print_freq: 50
+evaluate: false
+pretrained: true
+save_jit_trace: false
+seed: 0
+gpu_id: ANY
+multi_gpu {
+  world_size: 1
+  rank: 0
+  dist_url: "tcp://127.0.0.1:23457"
+  dist_backend: "nccl"
+  multiprocessing_distributed: true
+}
+
+lr_scheduler: CosineAnnealingLR
+
+optimizer: SGD
+sgd {
+  weight_decay: 1e-04
+  momentum: 0.9
+}
+
+quantization {
+  quantize: true
+  post_training_quantize: false
+  backend: TORCH_FBGEMM
+  num_calibration_batches: 120
+  num_batch_norm_update_epochs: 99999
+  activation_quantization_observer {
+    quantization_method: "minmax"
+    per_channel: false
+    symmetric: true
+    reduce_range: false
+    dtype: "quint8"
+    nbits: 8
+    fake_method: "lsq"
+  }
+  weight_quantization_observer {
+    quantization_method: "minmax"
+    per_channel: false
+    symmetric: true
+    reduce_range: false
+    dtype: "qint8"
+    nbits: 8
+    fake_method: "lsq"
+  }
+}
+
+

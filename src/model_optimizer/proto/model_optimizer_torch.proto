@@ -1,0 +1,357 @@
+syntax = "proto2";
+
+package model_optimizer_torch;
+
+message HyperParam {
+    optional string main_file = 1 [default="examples/classifier_imagenet/main.py"];
+    optional string arch = 2 [default="alexnet"];
+    optional float width_mult = 9 [default=1.0];
+    optional float depth_mult = 29 [default=1.0];
+    optional ModelSource model_source = 3;
+
+    enum ModelSource {
+        TorchVision = 1;
+        PyTorchCV = 2;
+        Local = 3;
+        Timm = 4;
+    }
+
+    optional string log_name = 4 [default="template"];
+    // path to dataset
+    required string data = 5;
+
+    // debug mode, record detailed information.
+    optional bool debug = 6;
+    // train and validate with one batch for overfit testing.
+    optional bool overfit_test = 7;
+
+    // Each gpu verifies the full amount of data
+    optional bool validate_data_full = 8;
+
+    // initial learning rate
+    optional float lr = 10 [default=0.1];
+    // number of total epochs to run
+    optional int32 epochs = 11 [default=90];
+    // mini-batch size (default: 256), this is the total '
+    //     'batch size of all GPUs on the current node when '
+    //     'using Data Parallel or Distributed Data Parallel
+    optional int32 batch_size = 12 [default=256];
+    optional int32 val_batch_size = 24 [default=256];
+    // number of data loading workers (default: 4)
+    optional int32 workers = 13 [default=4];
+    // print frequency (default: 50)
+    optional int32 print_freq = 14 [default=50];
+    // evaluate model on validation set
+    optional bool evaluate = 15;
+    // use pre-trained model
+    optional bool pretrained = 16;
+
+    // seed for initializing training.
+    optional int32 seed = 17;
+    // whether to export as onnx format.
+    optional bool export_onnx = 18;
+    optional bool onnx_simplify = 30;
+
+    // resume from previous checkpoint.
+    optional string resume = 19;
+    // weight
+    optional string weight = 22;
+
+    // gpu id
+    optional GPU gpu_id = 20;
+    // muti_gpu setting
+    optional MultiGPU multi_gpu = 21;
+
+    // autoslim
+    optional AutoSlim auto_slim = 23;
+
+    // must use with arch, model_source. weight is optinal.
+    optional bool is_subnet = 25 [default=false];
+
+    optional int32 val_resize_size = 26 [default=256];
+    optional int32 val_crop_size = 27 [default=224];
+    optional int32 train_crop_size = 28 [default=224];
+
+    //add 20211214
+    optional string excepts = 53;
+
+    optional Warmup warmup = 99;
+    optional LRScheduleType lr_scheduler = 100;
+
+    optional StepLRParam step_lr = 101;
+    optional MultiStepLRParam multi_step_lr = 102;
+    optional CyclicLRParam cyclic_lr = 103;
+    optional ExponentialLRParam exponential_lr= 104;
+
+    optional OptimizerType optimizer = 200;
+    optional SGDParam sgd = 201;
+    optional AdamParam adam = 202;
+    optional RMSpropParam rmsprop = 203;
+
+    //add 20220203 data augment
+    optional float label_smoothing = 300  [default=0.0];
+    optional AutoAugmentType autoaugment = 310;
+    optional float mixup_alpha = 320 [default=0.0];
+    optional float cutmix_alpha = 330 [default=0.0];
+
+    // add automatic mixed precision training
+    optional bool amp = 400 [default=false];
+
+    // add distillation
+    optional Distill distill = 410;
+
+    // add quantization
+    optional Quantization quantization = 450;
+
+    //add save jit trace
+    optional bool save_jit_trace = 460 [default=false];
+
+    // TODO: add other hyper-parameter
+
+}
+
+enum ModelSource {
+    TorchVision = 1;
+    PyTorchCV = 2;
+    Local = 3;
+    Timm = 4;
+}
+
+enum AutoAugmentType{
+    RA = 1;          //rand augment
+    TA_WIDE =2;      //TrivialAugmentWide
+    AUTOAUGMENT = 3; //autoaugment
+}
+
+enum GPU {
+    ANY = 1;  // use any GPU
+    NONE = 2; // use cpu
+}
+
+message MultiGPU {
+    // number of nodes for distributed training
+    optional int32 world_size = 1 [default=-1];
+    // ode rank for distributed training
+    optional int32 rank = 2 [default=0];
+    // url used to set up distributed training
+    optional string dist_url = 3 [default="tcp://127.0.0.1:23456"];
+    // distributed backend
+    optional string dist_backend = 4 [default="nccl"];
+    // Use multi-processing distributed training to launch
+    // N processes per node, which has N GPUs. This is the
+    // fastest way to use PyTorch for either single node or
+    // multi node data parallel training
+    optional bool multiprocessing_distributed = 5;
+}
+
+message AutoSlim {
+    optional RatioPruner ratio_pruner  = 1;
+    optional bool bn_training_mode = 2 [default=true];
+    optional Search search_config = 3;
+    optional bool retraining = 4 [default=false];
+    optional string channel_config_path = 5;
+}
+
+message RatioPruner {
+     repeated float ratios = 1;
+     repeated string except_start_keys = 2;
+}
+
+message KLDivergence {
+    optional float temperature = 1 [default=1.0];
+    optional string reduction = 2 [default="batchmean"];
+    optional float loss_weight = 3 [default=1.0];
+}
+
+message Distill{
+    optional TeacherModel teacher_model = 1;
+    optional KLDivergence kl_divergence = 2;
+}
+
+message TeacherModel {
+     repeated string arch = 1;
+     repeated ModelSource source = 2;
+}
+
+message QuantizationObserver{
+    //quantization_method is one of ("quantization_error","moving_average_minmax","minmax","percentile")
+    optional string quantization_method = 1 [default="minmax"];
+    optional bool per_channel = 2 [default=true];
+    optional bool symmetric = 3 [default=false];
+    optional bool reduce_range = 4 [default=false];
+    optional float percentile = 5 [default=99.99];
+    //dtype is one of (quint8, qint8, qint32)
+    optional string dtype = 6 [default="quint8"];
+    optional int32 nbits = 7 [default=8];
+    optional string fake_method = 8 [default="basic"];  // ("basic", "lsq")
+    optional string layers_restrict_to_8bit = 9;
+}
+
+enum SensitivityType {
+    ONE_AT_A_TIME_ACC = 0;
+    ONE_AT_A_TIME_LOSS = 1;
+    SQNR = 2;
+    // TODO: more other SensitivityType
+}
+message SensitivityAnalysis{
+    optional SensitivityType sensitivity_type = 1 [default=ONE_AT_A_TIME_ACC];
+    optional float target_metric = 2;
+    optional bool metric_big_best = 3 [default=true];
+}
+
+message Quantization{
+    optional bool quantize = 1 [default=true];
+    optional bool quantize_fx = 2 [default=true];
+    optional bool post_training_quantize = 3 [default=true];
+    optional InferenceBackend backend = 4 [default=TORCH_FBGEMM];
+    optional int32 num_calibration_batches = 5 [default=32];
+    optional int32 num_observer_update_epochs = 6 [default=4];
+    optional int32 num_batch_norm_update_epochs = 7 [default=99999];
+    optional QuantizationObserver activation_quantization_observer = 8;
+    optional QuantizationObserver weight_quantization_observer = 9;
+    optional SensitivityAnalysis sensitivity_analysis = 10;
+}
+
+message Search {
+    optional string weight_path = 1;
+    repeated int32 input_shape = 2;
+    optional GreedySearcher greedy_searcher = 3;
+    optional int32 align_channel = 4 [default=8];
+}
+
+message GreedySearcher {
+    repeated int64 target_flops = 1;
+    optional int32 max_channel_bins = 2 [default=12];
+
+    optional string resume_from = 4;
+}
+
+enum InferenceBackend {
+    TORCH_FBGEMM = 1;
+    TORCH_QNNPACK = 2;
+    TVM = 3;
+    TENSORRT = 4;
+    OPENVINO = 5;
+}
+
+enum OptimizerType {
+    SGD = 1;
+    Adam = 2;
+    RMSprop = 3;
+    // TODO: more other optimizer
+}
+
+message SGDParam {
+    optional float weight_decay = 1 [default=1e-4];
+    optional float momentum = 2 [default=0.9];
+}
+
+message AdamParam {
+    optional float weight_decay = 1 [default=1e-4];
+}
+
+message RMSpropParam {
+    optional float weight_decay = 1 [default=1e-4];
+    optional float momentum = 2 [default=0.9];
+}
+
+enum LRScheduleType {
+    StepLR = 1;
+    MultiStepLR = 2;
+    CosineAnnealingLR = 3;
+    CyclicLR = 4;
+    ExponentialLR = 5;
+}
+
+message Warmup {
+    // warm up epoch
+    optional int32 lr_warmup_epochs = 1 [default=5];
+    // warm up decay
+    optional float lr_warmup_decay = 2 [default=0.01];
+
+}
+
+message StepLRParam {
+    // step size of StepLR
+    optional int32 step_size = 3 [default=20];
+    // lr decay of StepLR
+    optional float gamma = 4 [default=0.1];
+}
+
+message MultiStepLRParam {
+    // milestones of MultiStepLR
+    repeated int32 milestones = 3;
+    // lr decay of MultiStepLR
+    optional float gamma = 4 [default=0.1];
+}
+
+message ExponentialLRParam{
+    // lr decay of ExponentialLR
+    optional float gamma = 4 [default=0.97];
+}
+
+
+message CyclicLRParam {
+    // 在使用时，原始的CLR是按照 batch iteration 的更新 lr 的，本项目中为了和之前的几个LR统一，
+    // 使用了 epoch iteration 来进行更新 lr
+    // base_lr (float or list): Initial learning rate which is the
+    //   lower boundary in the cycle for each parameter group.
+    optional float base_lr = 1;
+    // max_lr (float or list): Upper learning rate boundaries in the cycle
+    //         for each parameter group. Functionally,
+    //         it defines the cycle amplitude (max_lr - base_lr).
+    //         The lr at any cycle is the sum of base_lr
+    //         and some scaling of the amplitude; therefore
+    //         max_lr may not actually be reached depending on
+    //         scaling function.
+    optional float max_lr = 2;
+    //     step_size_up (int): Number of training iterations in the
+    //         increasing half of a cycle. Default: 2000
+    optional int32 step_size_up = 3 [default=2000];
+    //     step_size_down (int): Number of training iterations in the
+    //         decreasing half of a cycle. If step_size_down is None,
+    //         it is set to step_size_up. Default: None
+    optional int32 step_size_down = 4;
+    //     mode (str): One of {triangular, triangular2, exp_range}.
+    //         Values correspond to policies detailed above.
+    //         If scale_fn is not None, this argument is ignored.
+    //         Default: 'triangular'
+    optional Mode mode = 5;
+    enum Mode {
+        triangular = 1;
+        triangular2 = 2;
+        exp_range = 3;
+    }
+    //     gamma (float): Constant in 'exp_range' scaling function:
+    //         gamma**(cycle iterations)
+    //         Default: 1.0
+    optional float gamma = 6 [default=1.0];
+    //     scale_fn (function): Custom scaling policy defined by a single
+    //         argument lambda function, where
+    //         0 <= scale_fn(x) <= 1 for all x >= 0.
+    //         If specified, then 'mode' is ignored.
+    //         Default: None
+    //     scale_mode (str): {'cycle', 'iterations'}.
+    //         Defines whether scale_fn is evaluated on
+    //         cycle number or cycle iterations (training
+    //         iterations since start of cycle).
+    //         Default: 'cycle'
+    //     cycle_momentum (bool): If ``True``, momentum is cycled inversely
+    //         to learning rate between 'base_momentum' and 'max_momentum'.
+    //         Default: True
+    //     base_momentum (float or list): Lower momentum boundaries in the cycle
+    //         for each parameter group. Note that momentum is cycled inversely
+    //         to learning rate; at the peak of a cycle, momentum is
+    //         'base_momentum' and learning rate is 'max_lr'.
+    //         Default: 0.8
+    //     max_momentum (float or list): Upper momentum boundaries in the cycle
+    //         for each parameter group. Functionally,
+    //         it defines the cycle amplitude (max_momentum - base_momentum).
+    //         The momentum at any cycle is the difference of max_momentum
+    //         and some scaling of the amplitude; therefore
+    //         base_momentum may not actually be reached depending on
+    //         scaling function. Note that momentum is cycled inversely
+    //         to learning rate; at the start of a cycle, momentum is 'max_momentum'
+    //         and learning rate is 'base_lr'
+    //         Default: 0.9
+}

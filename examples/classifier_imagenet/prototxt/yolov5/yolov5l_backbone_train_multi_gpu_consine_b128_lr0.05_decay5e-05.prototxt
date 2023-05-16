@@ -1,0 +1,36 @@
+main_file: "examples/classifier_imagenet/main.py"
+arch: "yolov5l_backbone"
+model_source: Local
+log_name: "yolov5l_backbone_128_lr0.4_5e-05"
+debug: false
+data: "/data/imagenet/imagenet-torch"
+lr: 0.05
+epochs: 100
+batch_size: 128
+val_batch_size: 128
+workers: 8
+print_freq: 50
+evaluate: false
+pretrained: false
+seed: 0
+gpu_id: ANY
+multi_gpu {
+  world_size: 1
+  rank: 0
+  dist_url: "tcp://127.0.0.1:23457"
+  dist_backend: "nccl"
+  multiprocessing_distributed: true
+}
+
+warmup {
+  lr_warmup_epochs: 5
+  lr_warmup_decay: 0.01
+}
+
+lr_scheduler: CosineAnnealingLR
+
+optimizer: SGD
+sgd {
+  weight_decay: 5e-05
+  momentum: 0.9
+}

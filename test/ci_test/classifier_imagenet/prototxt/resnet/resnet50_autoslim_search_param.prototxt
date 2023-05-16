@@ -1,0 +1,71 @@
+main_file: "examples/classifier_imagenet/search_autoslim.py"
+arch: "resnet50"
+model_source: TorchVision
+log_name: "search_worker64"
+debug: false
+data: "/data/imagenet/imagenet-torch-mini"
+lr: 0.025
+batch_size: 64
+val_batch_size: 128
+workers: 8
+print_freq: 100
+evaluate: false
+pretrained: false
+seed: 0
+gpu_id: ANY
+multi_gpu {
+  world_size: 1
+  rank: 0
+  dist_url: "tcp://127.0.0.1:23457"
+  dist_backend: "nccl"
+  multiprocessing_distributed: true
+}
+distill
+{
+  kl_divergence {
+    temperature: 1.0
+    reduction: "batchmean"
+    loss_weight: 1.0
+  }
+}
+auto_slim {
+  ratio_pruner {
+    ratios: 0.1666666716337204
+    ratios: 0.25
+    ratios: 0.3333333432674408
+    ratios: 0.4166666567325592
+    ratios: 0.5
+    ratios: 0.5833333134651184
+    ratios: 0.6666666865348816
+    ratios: 0.75
+    ratios: 0.8333333134651184
+    ratios: 0.9166666865348816
+    ratios: 1.0
+    except_start_keys: "fc"
+  }
+
+  bn_training_mode: true
+# search config for search subnet
+  search_config {
+    weight_path: "{{logger_path}}/resnet50best.pth.tar"
+    input_shape: 3
+    input_shape: 224
+    input_shape: 224
+    greedy_searcher {
+      target_flops: 3000000010
+      target_flops: 2000000010
+      target_flops: 1000000010
+      target_flops: 570000010
+      max_channel_bins: 12
+      metrics: "accuracy"
+    }
+    align_channel: 8
+  }
+
+}
+
+optimizer: SGD
+sgd {
+  weight_decay: 1e-04
+  momentum: 0.9
+}

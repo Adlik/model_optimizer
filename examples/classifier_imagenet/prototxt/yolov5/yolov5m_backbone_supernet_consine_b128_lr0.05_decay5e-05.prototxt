@@ -1,0 +1,59 @@
+main_file: "examples/classifier_imagenet/main_autoslim.py"
+arch: "yolov5m_backbone"
+model_source: Local
+log_name: "consine_128_decay5e-05_epoch50"
+debug: false
+data: "/data/imagenet/imagenet-torch"
+lr: 0.05
+epochs: 50
+batch_size: 128
+workers: 8
+print_freq: 100
+evaluate: false
+pretrained: false
+seed: 0
+gpu_id: ANY
+multi_gpu {
+  world_size: 1
+  rank: 0
+  dist_url: "tcp://127.0.0.1:23457"
+  dist_backend: "nccl"
+  multiprocessing_distributed: true
+}
+auto_slim {
+  ratio_pruner {
+    ratios: 0.1666666716337204
+    ratios: 0.25
+    ratios: 0.3333333432674408
+    ratios: 0.4166666567325592
+    ratios: 0.5
+    ratios: 0.5833333134651184
+    ratios: 0.6666666865348816
+    ratios: 0.75
+    ratios: 0.8333333134651184
+    ratios: 0.9166666865348816
+    ratios: 1.0
+    except_start_keys: "3"
+  }
+  bn_training_mode: true
+}
+distill {
+  kl_divergence {
+    temperature: 1.0
+    reduction: "batchmean"
+    loss_weight: 1.0
+  }
+}
+warmup {
+  lr_warmup_epochs: 5
+  lr_warmup_decay: 0.01
+}
+
+lr_scheduler: CosineAnnealingLR
+
+optimizer: SGD
+sgd {
+  weight_decay: 5e-05
+  momentum: 0.9
+}
+amp: true

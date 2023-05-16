@@ -1,0 +1,42 @@
+main_file: "examples/classifier_imagenet/retrain_autoslim.py"
+arch: "resnet50"
+model_source: TorchVision
+log_name: "100epochs_decay1e05_momentum0.9_ls0.1"
+debug: false
+data: "/data/imagenet/imagenet-torch"
+lr: 0.05
+epochs: 100
+batch_size: 128
+workers: 8
+print_freq: 100
+evaluate: false
+pretrained: false
+seed: 0
+gpu_id: ANY
+multi_gpu {
+  world_size: 1
+  rank: 0
+  dist_url: "tcp://127.0.0.1:23457"
+  dist_backend: "nccl"
+  multiprocessing_distributed: true
+}
+is_subnet:true
+auto_slim {
+  channel_config_path: "logger/resnet50_search_test_2022-05-21-10:01/search/subnet_978826335.yaml"
+}
+
+warmup {
+  lr_warmup_epochs: 5
+  lr_warmup_decay: 0.01
+}
+
+lr_scheduler: CosineAnnealingLR
+
+optimizer: SGD
+sgd {
+  weight_decay: 5e-05
+  momentum: 0.9
+}
+
+label_smoothing: 0.1
+amp:true
