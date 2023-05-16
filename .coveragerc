@@ -1,0 +1,12 @@
+[run]
+branch = true
+parallel = true
+
+source = model_optimizer
+
+[paths]
+source = src
+
+
+[report]
+fail_under = 14
