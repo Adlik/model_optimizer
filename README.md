@@ -1,5 +1,9 @@
 # Model Optimizer
 
+[![Build Status](https://dev.azure.com/Adlik/GitHub/_apis/build/status/Adlik.model_optimizer?branchName=main)](https://dev.azure.com/Adlik/GitHub/_build/results?buildId=3472&view=results)
+[![Bors enabled](https://bors.tech/images/badge_small.svg)](https://app.bors.tech/repositories/65566)
+[![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
+
 Model Optimizer mainly focuses on model optimization, currently supporting model training, quantization, distillation,
 and pruning. For convenience, we provide different configuration files to support the above abilities. Users only need
 to use the default configuration or change the configuration file according to specific needs to realize the
@@ -185,7 +189,7 @@ The following will supply the detailed prototext configurations.
 
 Single node configuration is as follows:
 
-```json
+```protobuf
 main_file: "examples/classifier_imagenet/main.py"
 arch: "resnet50"
 model_source: TorchVision
@@ -235,7 +239,7 @@ The project support PTQ(Post Training Quantization) and QAT(Quantization Aware T
 
 The typical PTQ quantization configuration.
 
-```json
+```protobuf
 pretrained: true
 quantization {
   quantize: true
@@ -258,11 +262,11 @@ quantization {
     dtype: "qint8"
   }
 }
-
+```
 
 The typical QAT quantization configuration.
 
-```json
+```protobuf
 pretrained: true
 quantization {
   quantize: true
@@ -299,7 +303,7 @@ QAT quantization: examples/classifier_imagenet/prototxt/resnet/resnet50_quantiza
 If the accuracy loss is large after the model is fully quantized, you can enable mixed-precision quantization to
 provide your target accuracy. The related configuration items are as follows.
 
-```json
+```protobuf
 sensitivity_analysis {
   sensitivity_type: ONE_AT_A_TIME_ACC
   target_metric: 69.6
@@ -318,7 +322,7 @@ examples/classifier_imagenet/prototxt/distill/resnet50d_distill_resnet50.prototx
 
 The main distillation parameters are as follows:
 
-```json
+```protobuf
 distill {
   teacher_model {
     arch: "resnet50d"
