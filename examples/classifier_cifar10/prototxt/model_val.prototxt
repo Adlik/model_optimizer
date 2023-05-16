@@ -1,0 +1,18 @@
+main_file: "examples/classifier_cifar10/main.py"
+arch: "cifar10_vggsmall"
+model_source: Local
+
+log_name: "val"
+debug: false
+data: "/data/data.cifar10"
+lr: 0.10
+epochs: 90
+batch_size: 256
+workers: 16
+print_freq: 50
+evaluate: true
+pretrained: true
+seed: 0
+gpu_id: ANY
+export_onnx: false
+

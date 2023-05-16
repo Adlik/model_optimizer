@@ -6,7 +6,7 @@ jobs:
   - job: Tox
     displayName: Tox
     pool:
-        vmImage: ubuntu-18.04
+        vmImage: ubuntu-20.04
     steps:
       - task: UsePythonVersion@0
         inputs:
@@ -19,7 +19,7 @@ jobs:
   - job: Markdownlint
     displayName: Markdownlint
     pool:
-        vmImage: ubuntu-18.04
+        vmImage: ubuntu-20.04
     steps:
       - script: sudo npm install -g markdownlint-cli
         displayName: Install markdownlint-cli

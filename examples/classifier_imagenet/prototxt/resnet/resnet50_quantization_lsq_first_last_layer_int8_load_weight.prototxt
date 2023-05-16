@@ -1,0 +1,62 @@
+main_file: "examples/classifier_imagenet/main_quantization.py"
+arch: "resnet50"
+model_source: TorchVision
+log_name: "quantization_lsq_first_last_layer_int8"
+debug: false
+data: "/data/imagenet/imagenet-torch"
+weight: "/models_zoo/resnet50_multi_gpu_lr0.4_consinelr_warmup_2022-01-15_acc_76.962/resnet50best.pth.tar"
+lr: 0.0005
+epochs: 90
+batch_size: 32
+workers: 8
+print_freq: 50
+evaluate: false
+pretrained: false
+save_jit_trace: true
+seed: 0
+gpu_id: ANY
+multi_gpu {
+  world_size: 1
+  rank: 0
+  dist_url: "tcp://127.0.0.1:23457"
+  dist_backend: "nccl"
+  multiprocessing_distributed: true
+}
+
+lr_scheduler: CosineAnnealingLR
+
+optimizer: SGD
+sgd {
+  weight_decay: 1e-04
+  momentum: 0.9
+}
+
+quantization {
+  quantize: true
+  post_training_quantize: false
+  backend: TORCH_FBGEMM
+  num_calibration_batches: 120
+  num_batch_norm_update_epochs: 99999
+  activation_quantization_observer {
+    quantization_method: "minmax"
+    per_channel: false
+    symmetric: true
+    reduce_range: false
+    dtype: "quint8"
+    nbits: 4
+    fake_method: "lsq"
+    layers_restrict_to_8bit: "conv1,fc"
+  }
+  weight_quantization_observer {
+    quantization_method: "minmax"
+    per_channel: true
+    symmetric: true
+    reduce_range: false
+    dtype: "qint8"
+    nbits: 4
+    fake_method: "lsq"
+    layers_restrict_to_8bit: "conv1,fc"
+  }
+}
+
+

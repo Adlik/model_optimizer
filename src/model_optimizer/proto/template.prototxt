@@ -1,0 +1,101 @@
+main_file: "examples/classifier_imagenet/main.py"
+arch: "alexnet"
+model_source: TorchVision
+log_name: "template"
+data: "/home/root/datasets/data.cifar10"
+debug: false
+overfit_test: false
+width_mult: 1.0
+lr: 0.10000000149011612
+epochs: 90
+batch_size: 256
+workers: 4
+print_freq: 50
+evaluate: false
+pretrained: false
+seed: 0
+export_onnx: false
+resume: ""
+gpu_id: ANY
+multi_gpu {
+  world_size: -1
+  rank: 0
+  dist_url: "tcp://127.0.0.1:23456"
+  dist_backend: "nccl"
+  multiprocessing_distributed: false
+}
+weight: ""
+auto_slim {
+  ratio_pruner {
+    ratios: 0.1666666716337204
+    ratios: 0.25
+    ratios: 0.3333333432674408
+    ratios: 0.4166666567325592
+    ratios: 0.5
+    ratios: 0.5833333134651184
+    ratios: 0.6666666865348816
+    ratios: 0.75
+    ratios: 0.8333333134651184
+    ratios: 0.9166666865348816
+    ratios: 1.0
+    except_start_keys: "classifier.1"
+  }
+  bn_training_mode: true
+  search_config {
+    weight_path: ""
+    input_shape: 3
+    input_shape: 224
+    input_shape: 224
+    greedy_searcher {
+      target_flops: 500000000
+      target_flops: 300000000
+      target_flops: 200000000
+      max_channel_bins: 12
+      resume_from: ""
+    }
+    align_channel: 8
+  }
+  retraining: false
+  channel_config_path: ""
+}
+val_batch_size: 256
+is_subnet: false
+val_resize_size: 256
+val_crop_size: 224
+train_crop_size: 224
+depth_mult: 1.0
+warmup {
+  lr_warmup_epochs: 5
+  lr_warmup_decay: 0.009999999776482582
+}
+lr_scheduler: StepLR
+step_lr {
+  step_size: 20
+  gamma: 0.10000000149011612
+}
+multi_step_lr {
+  milestones: 20
+  milestones: 30
+  milestones: 50
+  gamma: 0.10000000149011612
+}
+cyclic_lr {
+  base_lr: 0.0
+  max_lr: 0.0
+  step_size_up: 2000
+  mode: triangular
+  gamma: 1.0
+}
+optimizer: SGD
+sgd {
+  weight_decay: 9.999999747378752e-05
+  momentum: 0.8999999761581421
+}
+adam {
+  weight_decay: 9.999999747378752e-05
+}
+label_smoothing: 0.0
+autoaugment: RA
+mixup_alpha: 0.0
+cutmix_alpha: 0.0
+amp: false

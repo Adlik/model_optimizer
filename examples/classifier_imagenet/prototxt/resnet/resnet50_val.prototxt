@@ -1,0 +1,17 @@
+main_file: "examples/classifier_imagenet/main.py"
+arch: "resnet50"
+model_source: TorchVision
+
+log_name: "val"
+debug: false
+data: "/data/imagenet/imagenet-torch"
+lr: 0.10
+epochs: 90
+batch_size: 256
+workers: 16
+print_freq: 50
+evaluate: true
+pretrained: true
+seed: 0
+gpu_id: ANY
+export_onnx: false

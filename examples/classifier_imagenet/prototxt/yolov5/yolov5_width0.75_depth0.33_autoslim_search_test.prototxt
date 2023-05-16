@@ -1,0 +1,78 @@
+main_file: "examples/classifier_imagenet/search_autoslim.py"
+arch: "yolov5_backbone"
+width_mult: 0.75
+depth_mult: 0.33
+model_source: Local
+log_name: "search_width0.75_depth0.33"
+debug: false
+data: "/data/imagenet/imagenet-torch"
+batch_size: 128
+val_batch_size: 1024
+workers: 8
+print_freq: 100
+evaluate: false
+pretrained: false
+seed: 0
+gpu_id: ANY
+multi_gpu {
+  world_size: 1
+  rank: 0
+  dist_url: "tcp://127.0.0.1:23457"
+  dist_backend: "nccl"
+  multiprocessing_distributed: true
+}
+auto_slim {
+  ratio_pruner {
+    ratios: 0.1666666716337204
+    ratios: 0.25
+    ratios: 0.3333333432674408
+    ratios: 0.4166666567325592
+    ratios: 0.5
+    ratios: 0.5833333134651184
+    ratios: 0.6666666865348816
+    ratios: 0.75
+    ratios: 0.8333333134651184
+    ratios: 0.9166666865348816
+    ratios: 1.0
+    except_start_keys: "3"
+  }
+  bn_training_mode: true
+# search config for search subnet
+  search_config {
+    weight_path: "logger/yolov5_backbone_consine_128_decay5e-05_epoch50_2022-06-06-10:16/yolov5_backbonebest.pth.tar"
+    input_shape: 3
+    input_shape: 224
+    input_shape: 224
+    greedy_searcher {
+      target_flops: 670000010
+      target_flops: 640000010
+      target_flops: 610000010
+      target_flops: 580000010
+      target_flops: 550000010
+      target_flops: 520000010
+      target_flops: 490000010
+      target_flops: 460000010
+      target_flops: 430000010
+      target_flops: 400000010
+      target_flops: 370000010
+      target_flops: 340000010
+      target_flops: 310000010
+      target_flops: 280000010
+      target_flops: 250000010
+      target_flops: 220000010
+      target_flops: 190000010
+      target_flops: 170000010
+      target_flops: 150000010
+      max_channel_bins: 12
+    }
+    align_channel: 8
+  }
+
+}
+distill {
+  kl_divergence {
+    temperature: 1.0
+    reduction: "batchmean"
+    loss_weight: 1.0
+  }
+}

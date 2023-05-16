@@ -1,0 +1,48 @@
+main_file: "examples/classifier_imagenet/main_distillation.py"
+arch: "resnet50"
+model_source: TorchVision
+log_name: "multi_gpu"
+debug: false
+data: "/data/imagenet/imagenet-torch"
+lr: 0.05
+epochs: 360
+batch_size: 128
+workers: 8
+amp: true
+print_freq: 50
+evaluate: false
+pretrained: false
+seed: 0
+gpu_id: ANY
+multi_gpu {
+  world_size: 1
+  rank: 0
+  dist_url: "tcp://127.0.0.1:23457"
+  dist_backend: "nccl"
+  multiprocessing_distributed: true
+}
+
+distill {
+  teacher_model {
+    arch: "resnet50d"
+    source: Timm
+  }
+  kl_divergence {
+    temperature: 1.0
+    reduction: "batchmean"
+    loss_weight: 0.7
+  }
+}
+
+warmup {
+  lr_warmup_epochs: 5
+  lr_warmup_decay: 0.01
+}
+
+lr_scheduler: CosineAnnealingLR
+
+optimizer: SGD
+sgd {
+  weight_decay: 1e-05
+  momentum: 0.9
+}

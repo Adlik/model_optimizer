@@ -1,0 +1,32 @@
+FROM pytorch/pytorch:1.12.1-cuda11.3-cudnn8-devel
+
+
+RUN pip install --no-cache-dir torchvision==0.13.1 \
+                torchaudio==0.12.1 \
+                timm==0.6.5 \
+                ordered-set==4.0.2 \
+                plotly==5.7.0 \
+                pytorchcv==0.0.67 \
+                tensorboard==2.6.0 \
+                tensorboardX==2.5 \
+                pyyaml==6.0 \
+                protobuf==3.19.4 \
+                pandas \
+                onnx \
+                wheel==0.26
+
+
+RUN mkdir /tmp/model_optimizer && \
+    cd /tmp/model_optimizer/ && \
+    git clone https://github.com/Adlik/model_optimizer.git && \
+    cd model_optimizer && \
+    python setup.py install && \
+    mkdir -p /root/work && \
+    cp -rf examples /root/work/. && \
+    cp -rf tools /root/work/. && \
+    cp -rf scripts /root/work/. && \
+    cp run_cli.sh /root/work/. && \
+    rm -rf /tmp/model_optimizer
+
+
+WORKDIR /root/work

@@ -1,0 +1,68 @@
+main_file: "examples/classifier_imagenet/main_quantization_lsq.py"
+arch: "efficientnet_b0"
+model_source: TorchVision
+log_name: "multi_gpu"
+debug: false
+data: "/data/imagenet/imagenet-torch"
+lr: 0.0002
+epochs: 360
+batch_size: 32
+workers: 8
+print_freq: 50
+evaluate: false
+pretrained: true
+save_jit_trace: true
+seed: 0
+gpu_id: ANY
+multi_gpu {
+  world_size: 1
+  rank: 0
+  dist_url: "tcp://127.0.0.1:23457"
+  dist_backend: "nccl"
+  multiprocessing_distributed: true
+}
+
+lr_scheduler: StepLR
+step_lr {
+  step_size: 3
+  gamma: 0.963
+}
+
+optimizer: RMSprop
+rmsprop{
+  weight_decay: 1e-5
+  momentum: 0.9
+}
+
+label_smoothing: 0.1
+autoaugment: RA
+
+quantization {
+  quantize: true
+  quantize_fx: true
+  post_training_quantize: false
+  backend: "fbgemm"
+  num_observer_update_epochs: 4
+  num_batch_norm_update_epochs: 99999
+  activation_quantization_observer {
+    quantization_method: "minmax"
+    per_channel: false
+    symmetric: true
+    reduce_range: false
+    dtype: "quint8"
+    nbits: 4
+    fake_method: "lsq"
+    layers_restrict_to_8bit: "features.0.0,classifier.1"
+  }
+  weight_quantization_observer {
+    quantization_method: "minmax"
+    per_channel: true
+    symmetric: true
+    reduce_range: false
+    dtype: "qint8"
+    nbits: 4
+    fake_method: "lsq"
+    layers_restrict_to_8bit: "features.0.0,classifier.1"
+  }
+}
+
