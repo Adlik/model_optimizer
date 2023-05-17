@@ -1,7 +1,7 @@
 trigger:
   - staging
   - trying
-  - main
+  - master
 jobs:
   - job: Tox
     displayName: Tox
