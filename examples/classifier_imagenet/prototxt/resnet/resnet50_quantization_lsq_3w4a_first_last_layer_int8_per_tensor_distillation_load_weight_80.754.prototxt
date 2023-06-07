@@ -1,17 +1,16 @@
 main_file: "examples/classifier_imagenet/main_quantization_lsq_distillation.py"
-arch: "efficientnet_b0"
+arch: "resnet50"
 model_source: TorchVision
-log_name: "quantization_lsq_distillation_first_last_layer_int8"
-debug: false
+log_name: "quantization_lsq_distillation_first_last_layer_int8_lr_0.001"
 data: "/data/imagenet/imagenet-torch"
-lr: 0.0002
-epochs: 120
+debug: false
+lr: 0.0010000000474974513
+epochs: 50
 batch_size: 32
 workers: 8
 print_freq: 50
 evaluate: false
 pretrained: false
-save_jit_trace: true
 seed: 0
 gpu_id: ANY
 multi_gpu {
@@ -21,15 +20,13 @@ multi_gpu {
   dist_backend: "nccl"
   multiprocessing_distributed: true
 }
-
+weight: "/root/work/model_optimizer_torch_dev_1.03/logger/resnet50_multi_gpu_202206211454_acc_80.754/resnet50best.pth.tar"
 lr_scheduler: CosineAnnealingLR
-
-optimizer: RMSprop
-rmsprop{
-  weight_decay: 1e-5
-  momentum: 0.9
+optimizer: SGD
+sgd {
+  weight_decay: 9.999999747378752e-05
+  momentum: 0.8999999761581421
 }
-
 distill {
   teacher_model {
     arch: "resnet50d"
@@ -38,10 +35,9 @@ distill {
   kl_divergence {
     temperature: 1.0
     reduction: "batchmean"
-    loss_weight: 0.7
+    loss_weight: 0.699999988079071
   }
 }
-
 quantization {
   quantize: true
   quantize_fx: true
@@ -65,10 +61,8 @@ quantization {
     symmetric: true
     reduce_range: false
     dtype: "qint8"
-    nbits: 4
+    nbits: 3
     fake_method: "lsq"
     layers_restrict_to_8bit: "conv1,fc"
   }
 }
-
-

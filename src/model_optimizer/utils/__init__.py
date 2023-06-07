@@ -9,6 +9,7 @@ from typing import Optional
 import copy
 import yaml
 import torch
+import torch.fx
 from torch import nn
 
 
