@@ -1,6 +1,6 @@
 # Model Optimizer
 
-[![Build Status](https://dev.azure.com/Adlik/GitHub/_apis/build/status/Adlik.model_optimizer?branchName=main)](https://dev.azure.com/Adlik/GitHub/_build/results?buildId=3472&view=results)
+[![Build Status](https://dev.azure.com/Adlik/GitHub/_apis/build/status/Adlik.model_optimizer?branchName=main)](https://dev.azure.com/Adlik/GitHub/_build/latest?definitionId=2&branchName=main)
 [![Bors enabled](https://bors.tech/images/badge_small.svg)](https://app.bors.tech/repositories/65566)
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 
@@ -22,9 +22,17 @@ of the models. Note that activations use the same observer as weights unless oth
 |       resnet50        |      76.13          |           75.580                  |        75.612          |         75.99       |
 |       mobilenetv2     |      71.878         |      70.730(act=percentile)       |        70.816          |         71.11       |
 
+For quantization, we explored low-bit model quantization, where weights are quantized to 3 bits and activations are
+quantized to 4 bits, using the lsq algorithm to quantize resnet50. Compared with the FP32 model, the quantized resnet50
+has no accuracy loss and has higher accuracy than the original model. Our quantized resnet50 model achieves 77.34%
+accuracy on the ImageNet dataset. Here we supply the quantized model in
+[model_zoo](https://github.com/Adlik/model_zoo) for testing. Besides, we submit our quantized model to
+[paperswithcode](https://paperswithcode.com/sota/quantization-on-imagenet?tag_filter=447), this is the current
+state-of-art result in low-bit quantization.
+
 For AutoSlim, we give the pruning effect of the resnet50 model on the ImageNet dataset.
 
-| FLOPs(G)  |Params(M)  |Size(MB)|  Top-1| Acc  |Input Size|
+|  Model   | FLOPs(G)  |Params(M)  |Size(MB)|  Top-1 Acc  |Input Size|
 |:---:|  :---: | :---: | :---: | :---: | :---: |
 |ResNet5  |4.12 |25.56  |98 |77.39% |224|
 |ResNet-50 0.75×  |2.35 |14.77  |57 |75.87% |224|
@@ -37,8 +45,8 @@ For AutoSlim, we give the pruning effect of the resnet50 model on the ImageNet d
 
 The following table shows the effect of AutoSlim on YOLOv5m backbone pruning.
 
-| FLOPs(G)  |Params(M)  |Size(MB)|mAPval 0.5:0.95|  Input Size|
-| :---: | :---: | :---: | :---: | :---: |
+|  Model | FLOPs(G)  |Params(M)  |Size(MB)|mAPval 0.5:0.95|  Input Size|
+| :---: | :---: | :---: | :---: | :---: | :---:   |
 |YOLOv5m  |24.5 |21.2 |81 |44.4 |640|
 |AutoSlim-YOLOv5m | 16.7(-31.8%)| 17.8(-16%)| 69(-14.8%)| 42.0(-2.4)| 640|
 
@@ -108,7 +116,7 @@ Refer to the paper [Distilling the Knowledge in a Neural Network](https://arxiv.
 ### 1.4 Pruning
 
 AutoSlim can prune the model automatically, which it can achieve better model accuracy under
-limited resource conditions (such as FLOPs, latency, memory footprint, or model size)。In AutoSlim,
+limited resource conditions (such as FLOPs, latency, memory footprint, or model size). In AutoSlim,
 it can be divided into several steps. The first step is to train a slimmable model for a few epochs
 (e.g., 10% to 20% of full training epochs) to quickly get a benchmark performance estimator; Then we
 evaluate the trained slimmable model and greedily slim the layer with minimal accuracy drop on a
@@ -157,14 +165,14 @@ python -m pip install -r requirements.txt
 
 There are two installation methods.
 
-1、Python wheel installation
+- Python wheel installation
 
 ```sh
 cd  model_optimizer
 python setup.py install
 ```
 
-2、Developer mode installation
+- Developer mode installation
 
 ```sh
 chmod +x *.sh
@@ -356,6 +364,32 @@ examples/classifier_imagenet/prototxt/resnet/resnet50_autoslim_search.prototxt
 
 ```sh
 examples/classifier_imagenet/prototxt/resnet/resnet50_autoslim_retrain_100epochs_lr0.4_decay5e05_momentum0.9_ls0.1.prototxt
+```
+
+### 3.5 Low-bit quantization
+
+Here is a detailed introduction to the steps to reproduce the quantitative results of our model. The quantization process
+can be divided into two steps.
+
+(1) model training
+
+First of all, we need a fully trained model as the base model for quantization. Here you can use the following
+configuration file to train a higher-precision model.
+
+```sh
+examples/classifier_imagenet/prototxt/resnet/resnet50_distillation.prototxt
+```
+
+When training the model, we will use resnet50d as the teacher model to distill the student model.
+
+(2) model quantization
+
+When quantizing, load a trained model, then use the LSQ algorithm to quantize the model. To improve
+the performance of the quantized model, we will use the distillation method in the quantization process. The following
+configuration file is the configuration of our model quantization.
+
+```sh
+examples/classifier_imagenet/prototxt/resnet/resnet50_quantization_lsq_3w4a_first_last_layer_int8_per_tensor_distillation_load_weight_80.754.prototxt
 ```
 
 ## Acknowledgement

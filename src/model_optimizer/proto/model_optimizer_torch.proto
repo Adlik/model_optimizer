@@ -292,7 +292,7 @@ message ExponentialLRParam{
 
 
 message CyclicLRParam {
-    // 在使用时，原始的CLR是按照 batch iteration 的更新 lr 的，本项目中为了和之前的几个LR统一，
+    // 在使用时，原始的 CLR 是按照 batch iteration 的更新 lr 的，本项目中为了和之前的几个 LR 统一，
     // 使用了 epoch iteration 来进行更新 lr
     // base_lr (float or list): Initial learning rate which is the
     //   lower boundary in the cycle for each parameter group.

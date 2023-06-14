@@ -47,7 +47,7 @@ quantization {
   quantize: true
   quantize_fx: true
   post_training_quantize: false
-  backend: "fbgemm"
+  backend: TORCH_FBGEMM
   num_observer_update_epochs: 4
   num_batch_norm_update_epochs: 99999
   activation_quantization_observer {

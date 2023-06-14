@@ -39,7 +39,7 @@ quantization {
   quantize: true
   quantize_fx: false
   post_training_quantize: true
-  backend: "fbgemm"
+  backend: TORCH_FBGEMM
   num_calibration_batches: 120
   activation_quantization_observer {
     quantization_method: "quantization_error"
